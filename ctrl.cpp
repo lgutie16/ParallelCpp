@@ -107,18 +107,19 @@ main(void) {
   //Aqué quedaría listo el primer nivel
        //Cuento el numero de procesos hijos a crear y creo un array de hilos
   pthread_t levelOneThreads[levelOneProcesses];
-  for (int i = 0; i < TubesReference.size(); ++i){
+  for (int i = 0; i < TubesReference.size() +1; ++i){
     pthread_t Proccessthread;
     levelOneThreads[i] = Proccessthread;
   }
 
   pthread_create(&levelOneThreads[0], NULL, readWriteThread, &mainTube);
-  for (int i=0; i < TubesReference.size(); ++i){
+  for (int i=1; i < TubesReference.size()+1; ++i){
+    cout << "creating threads" <<  endl;
     pthread_create(&levelOneThreads[i], NULL, readWriteThread, &TubesReference[i-1]);
   }
 
   void *ret;
-
+  pthread_join(levelOneThreads[0], &ret);
   pthread_join(levelOneThreads[1], &ret);
 
   return 0;
@@ -129,7 +130,6 @@ void* readWriteThread(void *arg) {
 
   char c;
   while (read(dataInOut->in, &c, 1) > 0) {
-    cout << c << endl;
     write(dataInOut->out, &c, 1);
   }
   close(dataInOut->in);
