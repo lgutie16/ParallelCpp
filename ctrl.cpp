@@ -36,11 +36,11 @@ WriteIn createTube(string& childInfo, int& position) {
   //istream_iterator<string>(),
   //ostream_iterator<string>(cout, "\n"));
   
-  vector<string> vec;
+  /*vector<string> vec;
   istringstream iss(childInfo);
   copy(istream_iterator<string>(iss),
   istream_iterator<string>(),
-  back_inserter(vec));
+  back_inserter(vec));*/
 
   //Start tube creation
   WriteIn wiFil;  //si esto cambia todo cambia
@@ -56,12 +56,9 @@ WriteIn createTube(string& childInfo, int& position) {
     close(wiFil.pipeIn[0]);
     dup2(wiFil.pipeOut[0], 0);
     dup2(wiFil.pipeIn[1], 1);
-    close(wiFil.pipeOut[0]);
-    close(wiFil.pipeIn[1]);
-    execl("/usr/bin/sort", "sort", NULL);
+    execl("./mayusculas", "mayusculas", NULL);
     return wiFil;
   }
-
   close(wiFil.pipeOut[0]);
   close(wiFil.pipeIn[1]);
 
@@ -74,119 +71,55 @@ int
 main(void) {
   //Aquí leo el archivo
      //Creo las tuberias para cada proceso con una funcion -  createTube()
+        //Vector para almacenar cada proceso con sus tuberias
+  vector<WriteIn> TubesReference; 
   const char* file = "ctrsis.cfg";
   int levelOneProcesses = 0;
   string line;
   ifstream configFile(file);
   if(configFile.is_open()){
     while ( getline (configFile,line) ){
+      WriteIn structure = createTube(line, levelOneProcesses);
+      TubesReference.push_back(structure);     
       levelOneProcesses++;
     }
   }else{
     cout << "Unable to open file" << endl; 
   } 
-  //Vector which defines name of struc
-  vector<WriteIn> TubesReference[levelOneProcesses]; 
 
-  //Cuento el numero de procesos hijos a crear y creo un array de hilos
-  pthread_t levelOneThreads[levelOneProcesses];
+  //Ya tengo los procesos guardados en un vector
+  //Ahora asocio las entradas con las salidas de cada una de las tuberias
+  //Según corresponda
+  WriteIn mainTube;
+  if ((mainTube.in = open("mayusculas.cpp", O_RDONLY)) == -1) {
+    std::cerr << "Error open file" << std::endl;
+    return 1;
+  }
+  for (int i = 0; i < TubesReference.size(); ++i){
+    TubesReference[i].in = TubesReference[i].pipeIn[0];
+    TubesReference[i].out = TubesReference[i+1].pipeOut[1];
+  }
+  //TubesReference[TubesReference.size()-1].out = 1;
 
-  const char* fileTwo = "ctrsis.cfg";
-  ifstream configFileTwo(fileTwo);
-  if(configFileTwo.is_open()){
-    while ( getline (configFileTwo,line) ){
-      //TubesReference.push_back(createTube(line, levelOneProcesses));
-      WriteIn structure = createTube(line, levelOneProcesses);
-      cout << structure.child << endl;
-      //Guardar a structute en un vector para asi poder manipular las tuberias de los diferentes procesos
-    }
-  }else{
-    cout << "Unable to open file" << endl; 
-  } 
+  
+
   //Con ese array creo los hilos que van a ejecutar a los ctrEval 
   //Aqué quedaría listo el primer nivel
-  WriteIn wiFil;
-
-  wiFil.pipeIn[2];
-  wiFil.pipeOut[2];
-
-  int pipeInMay[2];
-  int pipeOutMay[2];
-
-  pipe(wiFil.pipeIn);
-  pipe(wiFil.pipeOut);
-  pipe(pipeInMay);
-  pipe(pipeOutMay);
-
-  pid_t sortChild;
-  pid_t mayChild;
-
-  if ((sortChild = fork()) == 0) {
-    // Sort
-    close(pipeInMay[0]);
-    close(pipeInMay[1]);
-    close(pipeOutMay[0]);
-    close(pipeOutMay[1]);
-    close(wiFil.pipeOut[1]);
-    close(wiFil.pipeIn[0]);
-    dup2(wiFil.pipeOut[0], 0);
-    dup2(wiFil.pipeIn[1], 1);
-    close(wiFil.pipeOut[0]);
-    close(wiFil.pipeIn[1]);
-    execl("/usr/bin/sort", "sort", NULL);
-    return 1;
+       //Cuento el numero de procesos hijos a crear y creo un array de hilos
+  pthread_t levelOneThreads[levelOneProcesses];
+  for (int i = 0; i < TubesReference.size(); ++i){
+    pthread_t Proccessthread;
+    levelOneThreads[i] = Proccessthread;
   }
 
-  if ((mayChild = fork()) == 0) {
-    // mayusculas
-    close(wiFil.pipeIn[0]);
-    close(wiFil.pipeIn[1]);
-    close(wiFil.pipeOut[0]);
-    close(wiFil.pipeOut[1]);
-    close(pipeInMay[0]);
-    close(pipeOutMay[1]);
-    dup2(pipeOutMay[0], 0);
-    dup2(pipeInMay[1], 1);
-    close(pipeOutMay[0]);
-    close(pipeInMay[1]);
-    execl("./mayusculas", "mayusculas", NULL);
-    return 1;
+  pthread_create(&levelOneThreads[0], NULL, readWriteThread, &mainTube);
+  for (int i=0; i < TubesReference.size(); ++i){
+    pthread_create(&levelOneThreads[i], NULL, readWriteThread, &TubesReference[i-1]);
   }
-
-  close(wiFil.pipeOut[0]);
-  close(wiFil.pipeIn[1]);
-  close(pipeOutMay[0]);
-  close(pipeInMay[1]);
-
-  WriteIn  wiSort, wiMay;
-
-  //No me interesa es solo un control
-  if ((wiFil.in = open("ctrl.cpp", O_RDONLY)) == -1) {
-    cerr << "Error open file" << endl;
-    return 1;
-  }
-
-
-  //Se asigna la salida de un proceso como la entrada de otro 
-  //para continuar con el flujo de información en los diferentes
-  //hijos ctrlEval y Evaluators
-  wiFil.out = wiFil.pipeOut[1];
-  wiSort.in = wiFil.pipeIn[0];
-  wiSort.out = pipeOutMay[1];
-  wiMay.in = pipeInMay[0];
-  wiMay.out = 1;
-
-  pthread_t threadFile, threadSort, threadMay;
-  
-  pthread_create(&threadFile, NULL, readWriteThread, &wiFil);
-  pthread_create(&threadSort, NULL, readWriteThread, &wiSort);
-  pthread_create(&threadMay,  NULL, readWriteThread, &wiMay);
 
   void *ret;
-  
-  pthread_join(threadFile, &ret);
-  pthread_join(threadSort, &ret);
-  pthread_join(threadMay, &ret);
+
+  pthread_join(levelOneThreads[1], &ret);
 
   return 0;
 }
@@ -196,7 +129,7 @@ void* readWriteThread(void *arg) {
 
   char c;
   while (read(dataInOut->in, &c, 1) > 0) {
-    // cout << "In: " << c << endl;
+    cout << c << endl;
     write(dataInOut->out, &c, 1);
   }
   close(dataInOut->in);
