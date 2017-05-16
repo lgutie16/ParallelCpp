@@ -36,11 +36,14 @@ WriteIn createTube(string& childInfo, int& position) {
   //istream_iterator<string>(),
   //ostream_iterator<string>(cout, "\n"));
   
-  /*vector<string> vec;
+  vector<string> vec;
   istringstream iss(childInfo);
   copy(istream_iterator<string>(iss),
   istream_iterator<string>(),
-  back_inserter(vec));*/
+  back_inserter(vec));
+  string directory = vec[3] + "/mayusculas";
+  cout << directory << endl;
+  const char *path = directory.c_str();
 
   //Start tube creation
   WriteIn wiFil;  //si esto cambia todo cambia
@@ -50,6 +53,7 @@ WriteIn createTube(string& childInfo, int& position) {
   pid_t child;
   wiFil.child = child;
 
+
   if ((wiFil.child = fork()) == 0) {
     close(wiFil.pipeOut[1]);
     close(wiFil.pipeIn[0]);
@@ -57,14 +61,14 @@ WriteIn createTube(string& childInfo, int& position) {
     dup2(wiFil.pipeIn[1], 1);
     close(wiFil.pipeOut[0]);    
     close(wiFil.pipeIn[1]);
-    execl("./mayusculas", "mayusculas", NULL);
+    execl(path, "mayusculas", NULL);
     return wiFil;
   }
   close(wiFil.pipeOut[0]);
   close(wiFil.pipeIn[1]);
 
   //Ends tube creation
-  //cout << childInfo << vec[4] << endl;
+  cout << childInfo << vec[3] << endl;
   return wiFil;
 }
 
