@@ -102,12 +102,24 @@ main(void) {
   }
 
   TubesReference[0].out = TubesReference[1].pipeOut[1];
+  /*TubesReference[1].in = TubesReference[1].pipeIn[0];
+  TubesReference[1].out = TubesReference[2].pipeOut[1];
+  TubesReference[2].in = TubesReference[2].pipeIn[0];
+  TubesReference[2].out = 1;
+  cout << TubesReference[0].in << "::" << TubesReference[0].out << endl;
+  cout << TubesReference[1].in << "::" << TubesReference[1].out << endl;
+  cout << TubesReference[2].in << "::" << TubesReference[2].out << endl;*/
+  cout << TubesReference[0].in << "::" << TubesReference[0].out << endl;
   for (int i = 1; i < TubesReference.size()-1; ++i){
     TubesReference[i].in = TubesReference[i].pipeIn[0];
-    TubesReference[i].out = TubesReference[i+1].pipeOut[1];
-    TubesReference[i+1].in = TubesReference[i+1].pipeIn[0];
+    if((i + 1) != TubesReference.size()-1){
+      TubesReference[i].out = TubesReference[i+1].pipeOut[1];
+    }else{
+      TubesReference[TubesReference.size()-1].out = 1;
+    }    
+    cout << TubesReference[i].in << "::" << TubesReference[i].out << endl;
   }
-  TubesReference[TubesReference.size()-1].out = 1;
+  
 
   //Con ese array creo los hilos que van a ejecutar a los ctrEval 
   //Aqué quedaría listo el primer nivel
@@ -120,6 +132,7 @@ main(void) {
 
   pthread_create(&levelOneThreads[0], NULL, readWriteThread, &TubesReference[0]);
   pthread_create(&levelOneThreads[1], NULL, readWriteThread, &TubesReference[1]);
+  pthread_create(&levelOneThreads[2], NULL, readWriteThread, &TubesReference[2]);
   /*for (int i=1; i < TubesReference.size()+1; ++i){
     pthread_create(&levelOneThreads[i], NULL, readWriteThread, &TubesReference[i-1]);
   }*/
@@ -127,6 +140,7 @@ main(void) {
   void *ret;
   pthread_join(levelOneThreads[0], &ret);
   pthread_join(levelOneThreads[1], &ret);
+  pthread_join(levelOneThreads[2], &ret);
 
   return 0;
 }
