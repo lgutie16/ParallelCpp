@@ -125,22 +125,29 @@ main(void) {
   //Aqué quedaría listo el primer nivel
        //Cuento el numero de procesos hijos a crear y creo un array de hilos
   pthread_t levelOneThreads[levelOneProcesses];
-  for (int i = 0; i < TubesReference.size() +1; ++i){
+  for (int i = 0; i < TubesReference.size(); ++i){
     pthread_t Proccessthread;
     levelOneThreads[i] = Proccessthread;
   }
 
-  pthread_create(&levelOneThreads[0], NULL, readWriteThread, &TubesReference[0]);
+  for(int i = 0; i < TubesReference.size(); ++i){
+    pthread_create(&levelOneThreads[i], NULL, readWriteThread, &TubesReference[i]);
+  }
+
+  /*pthread_create(&levelOneThreads[0], NULL, readWriteThread, &TubesReference[0]);
   pthread_create(&levelOneThreads[1], NULL, readWriteThread, &TubesReference[1]);
-  pthread_create(&levelOneThreads[2], NULL, readWriteThread, &TubesReference[2]);
+  pthread_create(&levelOneThreads[2], NULL, readWriteThread, &TubesReference[2]);*/
   /*for (int i=1; i < TubesReference.size()+1; ++i){
     pthread_create(&levelOneThreads[i], NULL, readWriteThread, &TubesReference[i-1]);
   }*/
 
   void *ret;
-  pthread_join(levelOneThreads[0], &ret);
+  for(int i=0; i< TubesReference.size(); ++i){
+    pthread_join(levelOneThreads[i], &ret);
+  }
+  /*pthread_join(levelOneThreads[0], &ret);
   pthread_join(levelOneThreads[1], &ret);
-  pthread_join(levelOneThreads[2], &ret);
+  pthread_join(levelOneThreads[2], &ret);*/
 
   return 0;
 }
