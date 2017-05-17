@@ -12,6 +12,8 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <vector>
+#include <stdlib.h>
+#include <cstdlib>
 
 
 struct WriteIn {
@@ -30,21 +32,20 @@ void* readWriteThread(void *);
 //It creates tubes and return them and after that 
 //The tube is storage in a vector of type WriteIn
 WriteIn createTube(string& childInfo, int& position) {
-  //Passing string to vector
-  //istringstream iss(childInfo);
-  //copy(istream_iterator<string>(iss),
-  //istream_iterator<string>(),
-  //ostream_iterator<string>(cout, "\n"));
-  
   vector<string> vec;
   istringstream iss(childInfo);
   copy(istream_iterator<string>(iss),
   istream_iterator<string>(),
   back_inserter(vec));
-  string directory = vec[3] + "/mayusculas";
-  cout << directory << endl;
+  //verificar - innecessary
+  string directory = "./ctreval"; //verificar esta parte(No sé si los controles tambien estan en ese directorio)
   const char *path = directory.c_str();
+  //fin de verificar
 
+  //Envieronment variables level 1
+  setenv("FICHEROCFG", vec[4].c_str(), 1);
+  setenv("DIRDETRABAJO", vec[3].c_str(), 1);
+  
   //Start tube creation
   WriteIn wiFil;  //si esto cambia todo cambia
   pipe(wiFil.pipeIn);
@@ -61,14 +62,13 @@ WriteIn createTube(string& childInfo, int& position) {
     dup2(wiFil.pipeIn[1], 1);
     close(wiFil.pipeOut[0]);    
     close(wiFil.pipeIn[1]);
-    execl(path, "mayusculas", NULL);
+    execl(path, "ctreval", NULL);
     return wiFil;
   }
   close(wiFil.pipeOut[0]);
   close(wiFil.pipeIn[1]);
 
   //Ends tube creation
-  cout << childInfo << vec[3] << endl;
   return wiFil;
 }
 
@@ -100,28 +100,19 @@ main(void) {
 
   WriteIn mainTube;
   TubesReference.push_back(mainTube);
-  if ((TubesReference[0].in = open("mayusculas.cpp", O_RDONLY)) == -1) {
+  if ((TubesReference[0].in = open("ctreval.cpp", O_RDONLY)) == -1) {
     std::cerr << "Error open file" << std::endl;
     return 1;
   }
 
   TubesReference[0].out = TubesReference[1].pipeOut[1];
-  /*TubesReference[1].in = TubesReference[1].pipeIn[0];
-  TubesReference[1].out = TubesReference[2].pipeOut[1];
-  TubesReference[2].in = TubesReference[2].pipeIn[0];
-  TubesReference[2].out = 1;
-  cout << TubesReference[0].in << "::" << TubesReference[0].out << endl;
-  cout << TubesReference[1].in << "::" << TubesReference[1].out << endl;
-  cout << TubesReference[2].in << "::" << TubesReference[2].out << endl;*/
-  cout << TubesReference[0].in << "::" << TubesReference[0].out << endl;
   for (int i = 1; i < TubesReference.size()-1; ++i){
     TubesReference[i].in = TubesReference[i].pipeIn[0];
     if((i + 1) != TubesReference.size()-1){
       TubesReference[i].out = TubesReference[i+1].pipeOut[1];
     }else{
       TubesReference[TubesReference.size()-1].out = 1;
-    }    
-    cout << TubesReference[i].in << "::" << TubesReference[i].out << endl;
+    }
   }
   
 
@@ -138,20 +129,10 @@ main(void) {
     pthread_create(&levelOneThreads[i], NULL, readWriteThread, &TubesReference[i]);
   }
 
-  /*pthread_create(&levelOneThreads[0], NULL, readWriteThread, &TubesReference[0]);
-  pthread_create(&levelOneThreads[1], NULL, readWriteThread, &TubesReference[1]);
-  pthread_create(&levelOneThreads[2], NULL, readWriteThread, &TubesReference[2]);*/
-  /*for (int i=1; i < TubesReference.size()+1; ++i){
-    pthread_create(&levelOneThreads[i], NULL, readWriteThread, &TubesReference[i-1]);
-  }*/
-
   void *ret;
   for(int i=0; i< TubesReference.size(); ++i){
     pthread_join(levelOneThreads[i], &ret);
   }
-  /*pthread_join(levelOneThreads[0], &ret);
-  pthread_join(levelOneThreads[1], &ret);
-  pthread_join(levelOneThreads[2], &ret);*/
 
   return 0;
 }

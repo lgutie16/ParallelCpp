@@ -1,0 +1,16 @@
+<grupo>
+	<nombre>OSos</nombre>
+	<repositorio>https://bitbucket.org/lgutie16/osos</repositorio>
+	<miembro>
+		<nombre>Linda Jessica Gutiérrez Montoya</nombre>
+		<codigo>201410068010</codigo>
+		<grupo>032</grupo>
+		<email>lgutie16@eafit.edu.co</email>
+	</miembro>
+	<miembro>
+		<nombre>Jose Fernando Tobon Roldan</nombre>
+		<codigo></codigo>
+		<grupo>032</grupo>
+		<email>jtobonr@eafit.edu.co</email>
+	</miembro>
+</grupo>
