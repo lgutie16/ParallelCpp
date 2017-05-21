@@ -24,9 +24,8 @@ main(void) {
   int c;
 
   while ((c = cin.get()) != EOF) {
-    c = ::tolower(c);    
-    cout << "Pasa Algo XD" << endl;
-    cout << (char) c << (char) c;
+    c = ::toupper(c);    
+    cout << (char) c ;
   }
 
   return 0;

@@ -88,7 +88,7 @@ main(void) {
     while ( getline (configFile,line) ){
       WriteIn structure = createTube(line, levelOneProcesses);
       TubesReference.push_back(structure);
-      levelOneProcesses++;    
+      levelOneProcesses++;  
     }
   }else{
     cout << "Unable to open file" << endl; 

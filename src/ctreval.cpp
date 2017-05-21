@@ -16,7 +16,7 @@
 #include <cstdlib>
 #include <cctype>
 #define EOF (-1)
-
+#define BUF_SIZE 10
 struct WriteIn {
   int in;
   int out;
@@ -69,10 +69,17 @@ WriteIn createTube(string& childInfo, int& position) {
 
 int
 main(void) {
-  vector<WriteIn> TubesReference;  
+  //Capturo Variable de ambiente para buscar el config file que corresponda
   char *configfile = getenv("FICHEROCFG");
-  char *configpath = getenv("DIRDETRABAJO");
-  const char* file = "./level1/son1/son1.cfg";  
+  char *configpath = getenv("DIRDETRABAJO");  
+  int size = strlen(configfile) + strlen(configpath) + 1;
+  char result[size];   // array to hold the result.
+  strcpy(result,configpath); // copy string one into the result.
+  strcat(result,"/"); // append string two to the result.
+  strcat(result,configfile);
+
+  vector<WriteIn> TubesReference; 
+  const char* file = result;// Simulacion de captura de  variables de ambiente  
   int levelOneProcesses = 0;
   string line;
   ifstream configFile(file);
@@ -85,52 +92,79 @@ main(void) {
       if(strcmp(ch,evaluator)==0){ 
         WriteIn structure = createTube(line, levelOneProcesses);
         TubesReference.push_back(structure);
-        cout << TubesReference[levelOneProcesses].child << endl;
+        //cout << TubesReference[levelOneProcesses].child << endl;
         levelOneProcesses++;    
       };
     }    
   }else{
     cout << "Unable to open file" << endl; 
-  } 
-  cout << levelOneProcesses << endl;
+  }
 
-  ///////////
+  /////////// Enlazan los tubos
   WriteIn mainTube;
   TubesReference.push_back(mainTube);
-  if ((TubesReference[0].in = open("ctreval.cpp", O_RDONLY)) == -1) {
+  if ((TubesReference[0].in = open("./level1/son1/son1.cfg", O_RDONLY)) == -1) {
     std::cerr << "Error open file" << std::endl;
     return 1;
-  }
+  } //simulando la entrada que esta dada por la salida del proceso ctrsis*/
+
+  cout << TubesReference[0].in << endl;
+
+  pthread_t levelOneThreads[levelOneProcesses];
   TubesReference[0].out = TubesReference[1].pipeOut[1];
-  for (int i = 1; i < TubesReference.size()-1; ++i){
+  TubesReference[1].in = TubesReference[1].pipeIn[0];
+  TubesReference[1].out = TubesReference[2].pipeOut[1];
+  TubesReference[2].in = TubesReference[2].pipeIn[0];
+  TubesReference[2].out = 1;
+  cout << TubesReference[0].in << "::" << TubesReference[0].out << endl;
+  cout << TubesReference[1].in << "::" << TubesReference[1].out << endl;
+  cout << TubesReference[2].in << "::" << TubesReference[2].out << endl;
+
+  pthread_create(&levelOneThreads[0], NULL, readWriteThread, &TubesReference[0]);
+  pthread_create(&levelOneThreads[1], NULL, readWriteThread, &TubesReference[1]);
+  pthread_create(&levelOneThreads[2], NULL, readWriteThread, &TubesReference[2]);
+
+  void *ret;
+  pthread_join(levelOneThreads[0], &ret);
+  pthread_join(levelOneThreads[1], &ret);
+  pthread_join(levelOneThreads[2], &ret);
+
+  /*TubesReference[0].out = TubesReference[1].pipeOut[1];*/
+ 
+ /* for (int i = 1; i < TubesReference.size()-1; ++i){
     TubesReference[i].in = TubesReference[i].pipeIn[0];
     if((i + 1) != TubesReference.size()-1){
       TubesReference[i].out = TubesReference[i+1].pipeOut[1];
     }else{
       TubesReference[TubesReference.size()-1].out = 1;
     }
-  }
+  }*/
 
   //Con ese array creo los hilos que van a ejecutar a los ctrEval 
   //Aqué quedaría listo el primer nivel
        //Cuento el numero de procesos hijos a crear y creo un array de hilos
-  pthread_t levelOneThreads[levelOneProcesses];
+  /*pthread_t levelOneThreads[levelOneProcesses];
   for (int i = 0; i < TubesReference.size(); ++i){
     pthread_t Proccessthread;
     levelOneThreads[i] = Proccessthread;
   }
 
   for(int i = 0; i < TubesReference.size(); ++i){    
-    cout << "Somerthi222n" << endl;
+    cout << levelOneThreads[i] << endl;
     pthread_create(&levelOneThreads[i], NULL, readWriteThread, &TubesReference[i]);
-  }
+  }*/
 
-  void *ret;
+
+ /* void *ret;
+  cout << TubesReference.size() << endl;
   for(int i=0; i< TubesReference.size(); ++i){
     cout << "Somerthin" << endl;
     pthread_join(levelOneThreads[i], &ret);
-  }
+  }*/
 
+   /* void *ret;
+    pthread_join(levelOneThreads[0], &ret);
+    pthread_join(levelOneThreads[1], &ret);*/
 
   /*int c;
   while ((c = std::cin.get()) != EOF) {
@@ -143,7 +177,7 @@ main(void) {
 
 void* readWriteThread(void *arg) {
   WriteIn *dataInOut = (struct WriteIn *) arg;
-
+  cout << "here" << endl;
   char c;
   while (read(dataInOut->in, &c, 1) > 0) {
     write(dataInOut->out, &c, 1);
