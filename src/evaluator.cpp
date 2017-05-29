@@ -23,9 +23,11 @@ int
 main(void) {
   int c;
 
-  while ((c = cin.get()) != EOF) {
+  int i =0;
+  while (i < 10) {
     c = ::toupper(c);    
-    cout << (char) c ;
+    cout << i <<"(char) c" << endl  ;
+    i++;
   }
 
   return 0;

@@ -1,8 +1,16 @@
-runme: ctrsis.cpp ctrsis.o
-	 g++ ./src/ctrsis.cpp ctrsis.o -o runme
+all: main clean init
 
-ctrsis.o: ctreval.cpp evaluator.o
-	g++ ./src/ctreval.cpp evaluator.o -o ctrsis.o
+main: src/ctrsis.cpp src/ctreval.cpp src/evaluator.cpp
+	g++ -pthread src/ctrsis.cpp -o ctrsis -std=c++11
+	g++ -pthread -o ctreval src/ctreval.cpp
+	g++ -pthread -o evaluator src/evaluator.cpp 
 
-evaluator.o: evaluator.cpp 
-	g++ ./src/evaluator.cpp -o evaluator.o
+clean:
+	rm  src/ctrsis
+	rm  src/ctreval
+	rm  src/evaluator
+
+init:
+	mv ctrsis src/
+	mv ctreval src/
+	mv evaluator src/	

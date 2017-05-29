@@ -42,7 +42,7 @@ WriteIn createTube(string& childInfo, int& position) {
 
   
   //Start tube creation
-  WriteIn wiFil;  //si esto cambia todo cambia
+  WriteIn wiFil;
   pipe(wiFil.pipeIn);
   pipe(wiFil.pipeOut);
 
@@ -72,6 +72,7 @@ main(void) {
   //Capturo Variable de ambiente para buscar el config file que corresponda
   char *configfile = getenv("FICHEROCFG");
   char *configpath = getenv("DIRDETRABAJO");  
+
   int size = strlen(configfile) + strlen(configpath) + 1;
   char result[size];   // array to hold the result.
   strcpy(result,configpath); // copy string one into the result.
@@ -79,7 +80,7 @@ main(void) {
   strcat(result,configfile);
 
   vector<WriteIn> TubesReference; 
-  const char* file = result;// Simulacion de captura de  variables de ambiente  
+  const char* file = result;// Simulacion de captura de  variables de ambiente
   int levelOneProcesses = 0;
   string line;
   ifstream configFile(file);
@@ -92,7 +93,7 @@ main(void) {
       if(strcmp(ch,evaluator)==0){ 
         WriteIn structure = createTube(line, levelOneProcesses);
         TubesReference.push_back(structure);
-        //cout << TubesReference[levelOneProcesses].child << endl;
+        cout << TubesReference[levelOneProcesses].child << endl;
         levelOneProcesses++;    
       };
     }    
@@ -108,70 +109,9 @@ main(void) {
     return 1;
   } //simulando la entrada que esta dada por la salida del proceso ctrsis*/
 
-  cout << TubesReference[0].in << endl;
 
-  pthread_t levelOneThreads[levelOneProcesses];
-  TubesReference[0].out = TubesReference[1].pipeOut[1];
-  TubesReference[1].in = TubesReference[1].pipeIn[0];
-  TubesReference[1].out = TubesReference[2].pipeOut[1];
-  TubesReference[2].in = TubesReference[2].pipeIn[0];
-  TubesReference[2].out = 1;
-  cout << TubesReference[0].in << "::" << TubesReference[0].out << endl;
-  cout << TubesReference[1].in << "::" << TubesReference[1].out << endl;
-  cout << TubesReference[2].in << "::" << TubesReference[2].out << endl;
-
-  pthread_create(&levelOneThreads[0], NULL, readWriteThread, &TubesReference[0]);
-  pthread_create(&levelOneThreads[1], NULL, readWriteThread, &TubesReference[1]);
-  pthread_create(&levelOneThreads[2], NULL, readWriteThread, &TubesReference[2]);
-
-  void *ret;
-  pthread_join(levelOneThreads[0], &ret);
-  pthread_join(levelOneThreads[1], &ret);
-  pthread_join(levelOneThreads[2], &ret);
-
-  /*TubesReference[0].out = TubesReference[1].pipeOut[1];*/
+  
  
- /* for (int i = 1; i < TubesReference.size()-1; ++i){
-    TubesReference[i].in = TubesReference[i].pipeIn[0];
-    if((i + 1) != TubesReference.size()-1){
-      TubesReference[i].out = TubesReference[i+1].pipeOut[1];
-    }else{
-      TubesReference[TubesReference.size()-1].out = 1;
-    }
-  }*/
-
-  //Con ese array creo los hilos que van a ejecutar a los ctrEval 
-  //Aqué quedaría listo el primer nivel
-       //Cuento el numero de procesos hijos a crear y creo un array de hilos
-  /*pthread_t levelOneThreads[levelOneProcesses];
-  for (int i = 0; i < TubesReference.size(); ++i){
-    pthread_t Proccessthread;
-    levelOneThreads[i] = Proccessthread;
-  }
-
-  for(int i = 0; i < TubesReference.size(); ++i){    
-    cout << levelOneThreads[i] << endl;
-    pthread_create(&levelOneThreads[i], NULL, readWriteThread, &TubesReference[i]);
-  }*/
-
-
- /* void *ret;
-  cout << TubesReference.size() << endl;
-  for(int i=0; i< TubesReference.size(); ++i){
-    cout << "Somerthin" << endl;
-    pthread_join(levelOneThreads[i], &ret);
-  }*/
-
-   /* void *ret;
-    pthread_join(levelOneThreads[0], &ret);
-    pthread_join(levelOneThreads[1], &ret);*/
-
-  /*int c;
-  while ((c = std::cin.get()) != EOF) {
-    c = ::tolower(c);
-    std::cout << (char) c << (char) c;
-  }*/
-
   return 0;
 }
 

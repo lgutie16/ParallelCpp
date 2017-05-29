@@ -32,22 +32,22 @@ void* readWriteThread(void *);
 //It creates tubes and return them and after that 
 //The tube is storage in a vector of type WriteIn
 WriteIn createTube(string& childInfo, int& position) {
-  vector<string> vec;
+  /*vector<string> vec;
   istringstream iss(childInfo);
   copy(istream_iterator<string>(iss),
   istream_iterator<string>(),
   back_inserter(vec));
-  //verificar - innecessary
-  string directory = "./ctreval"; //verificar esta parte(No sé si los controles tambien estan en ese directorio)
-  const char *path = directory.c_str();
-  //fin de verificar
-
   //Envieronment variables level 1
   setenv("FICHEROCFG", vec[4].c_str(), 1);
-  setenv("DIRDETRABAJO", vec[3].c_str(), 1);
+  setenv("DIRDETRABAJO", vec[3].c_str(), 1);*/
+
+  //verificar - innecessary
+  string directory = "./evaluator"; //verificar esta parte(No sé si los controles tambien estan en ese directorio)
+  const char *path = directory.c_str();
+  //fin de verificar
   
   //Start tube creation
-  WriteIn wiFil;  //si esto cambia todo cambia
+  WriteIn wiFil;  
   pipe(wiFil.pipeIn);
   pipe(wiFil.pipeOut);
 
@@ -78,12 +78,14 @@ main(void) {
      //Creo las tuberias para cada proceso con una funcion -  createTube()
         //Vector para almacenar cada proceso con sus tuberias
   vector<WriteIn> TubesReference; 
+  WriteIn mainTube;
+  TubesReference.push_back(mainTube);
+
 
   const char* file = "ctrsis.cfg";
   int levelOneProcesses = 0;
   string line;
   ifstream configFile(file);
-
   if(configFile.is_open()){
     while ( getline (configFile,line) ){
       WriteIn structure = createTube(line, levelOneProcesses);
@@ -93,47 +95,59 @@ main(void) {
   }else{
     cout << "Unable to open file" << endl; 
   } 
+  configFile.close();
 
   //Ya tengo los procesos guardados en un vector
   //Ahora asocio las entradas con las salidas de cada una de las tuberias
   //Según corresponda
 
-  WriteIn mainTube;
-  TubesReference.push_back(mainTube);
-  if ((TubesReference[0].in = open("ctreval.cpp", O_RDONLY)) == -1) {
+  
+  if ((TubesReference[0].in = open("ctrsis.cfg", O_RDONLY)) == -1) {
     std::cerr << "Error open file" << std::endl;
     return 1;
   }
-
   TubesReference[0].out = TubesReference[1].pipeOut[1];
-  for (int i = 1; i < TubesReference.size()-1; ++i){
+  cout << TubesReference[0].in << "::" << TubesReference[0].out << endl;
+  for (int i = 1; i < TubesReference.size(); ++i){
     TubesReference[i].in = TubesReference[i].pipeIn[0];
-    if((i + 1) != TubesReference.size()-1){
+    if(i != TubesReference.size()-1){
       TubesReference[i].out = TubesReference[i+1].pipeOut[1];
     }else{
       TubesReference[TubesReference.size()-1].out = 1;
     }
+    cout << TubesReference[i].in << "::" << TubesReference[i].out << endl;
   }
+ 
   
 
   //Con ese array creo los hilos que van a ejecutar a los ctrEval 
   //Aqué quedaría listo el primer nivel
        //Cuento el numero de procesos hijos a crear y creo un array de hilos
   pthread_t levelOneThreads[levelOneProcesses];
-  for (int i = 0; i < TubesReference.size(); ++i){
-    pthread_t Proccessthread;
-    levelOneThreads[i] = Proccessthread;
-  }
+  /*for (int i = 0; i < TubesReference.size(); ++i){
+    // pthread_t Proccessthread;
+    levelOneThreads[i] = new  pthread_t();
+    cout << "Thread " << levelOneThreads[i] <<  endl;
+  }*/
 
   for(int i = 0; i < TubesReference.size(); ++i){
-    pthread_create(&levelOneThreads[i], NULL, readWriteThread, &TubesReference[i]);
+    int ret =  pthread_create(&levelOneThreads[i],NULL, readWriteThread, &TubesReference[i]);
+    if(ret != 0) {
+      printf("Error: pthread_create() failed\n");
+      exit(EXIT_FAILURE);
+    }
+    cout << "Thread " << levelOneThreads[i] <<  endl;
+    //pthread_create(&levelOneThreads[i], NULL, readWriteThread, &TubesReference[i]);
   }
 
+
+  //string myarray [] = { "Control One { ./level1/son1 son1.cfg }", "Control Two { ./level1/son2 son2.cfg }" , "Control Three { ./level1/son3 son3.cfg }", "Control Three { ./level1/son3 son3.cfg }" };
+  //Envieronment variables level 1
   void *ret;
   for(int i=0; i< TubesReference.size(); ++i){
+    cout << i << "::" <<   endl;
     pthread_join(levelOneThreads[i], &ret);
   }
-
   return 0;
 }
 
