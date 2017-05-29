@@ -29,6 +29,5 @@ main(void) {
     cout << i <<"(char) c" << endl  ;
     i++;
   }
-
   return 0;
 }
