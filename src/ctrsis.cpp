@@ -130,16 +130,25 @@ main(void) {
     cout << "Thread " << levelOneThreads[i] <<  endl;
   }*/
 
+  string myarray [] = { "Control One { ./level1/son1 son1.cfg }", "Control Two { ./level1/son2 son2.cfg }" , "Control Three { ./level1/son3 son3.cfg }", "Control Three { ./level1/son3 son3.cfg }" };
   cout << levelOneProcesses << endl;
   for(int i = 0; i < levelOneProcesses; ++i){
-    cout << "HERE " << i << endl;
-    pthread_t Proccessthread;
-    int ret =  pthread_create(&Proccessthread,NULL, readWriteThread, &TubesReference[i]);
+    vector<string> vec;
+    istringstream iss(myarray[i]);
+    copy(istream_iterator<string>(iss),
+    istream_iterator<string>(),
+    back_inserter(vec));
+    //Envieronment variables level 1
+    setenv("FICHEROCFG", vec[4].c_str(), 1);
+    setenv("DIRDETRABAJO", vec[3].c_str(), 1);
+
+
+    int ret =  pthread_create(&levelOneThreads[i],NULL, readWriteThread, &TubesReference[i]);
     if(ret != 0) {
       printf("Error: pthread_create() failed\n");
       exit(EXIT_FAILURE);
     }else{
-      cout << "return: " << pthread_join(Proccessthread, NULL) << endl;
+      cout << "return: " << pthread_join(levelOneThreads[i], NULL) << endl;
     }
     //cout << "Thread " << levelOneThreads[i] << " Tube " << TubesReference[i].child <<  endl;
     //pthread_create(&levelOneThreads[i], NULL, readWriteThread, &TubesReference[i]);
@@ -158,6 +167,9 @@ main(void) {
 
 void* readWriteThread(void *arg) {
   sleep(3);
+  char *configfile = getenv("FICHEROCFG");
+  char *configpath = getenv("DIRDETRABAJO"); 
+  cout << configpath << configfile << endl;
   /*WriteIn *dataInOut = (struct WriteIn *) arg;
 
   char c;
