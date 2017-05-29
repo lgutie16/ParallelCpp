@@ -130,8 +130,6 @@ main(void) {
     cout << "Thread " << levelOneThreads[i] <<  endl;
   }*/
 
-  string variable = "4";
-  setenv("A", variable.c_str(), 1);
 
   string myarray [] = { "Control One { ./level1/son1 son1.cfg }", "Control Two { ./level1/son2 son2.cfg }" , "Control Three { ./level1/son3 son3.cfg }", "Control Three { ./level1/son3 son3.cfg }" };
   cout << levelOneProcesses << endl;
@@ -173,20 +171,18 @@ void* readWriteThread(void *arg) {
   char *configfile = getenv("FICHEROCFG");
   char *configpath = getenv("DIRDETRABAJO"); 
   cout << configpath << configfile << endl;
-
-  char *variable = getenv("A"); 
-  cout << variable << endl;
   
   WriteIn *dataInOut = (struct WriteIn *) arg;
    
-  cout << dataInOut->out << endl;
+  
 
-  /*char c;
+  char c;
   while (read(dataInOut->in, &c, 1) > 0) {
-    write(dataInOut->out, &c, 1);
+    //write(dataInOut->out, &c, 1);
+    cout << c ;
   }
   close(dataInOut->in);
-  close(dataInOut->out);*/
+  close(dataInOut->out);
   
 
   //return NULL;
