@@ -108,7 +108,7 @@ main(void) {
   }
   TubesReference[0].out = TubesReference[1].pipeOut[1];
   cout << TubesReference[0].in << "::" << TubesReference[0].out << endl;
-  for (int i = 1; i < TubesReference.size(); ++i){
+  for (int i = 1; i < levelOneProcesses; ++i){
     TubesReference[i].in = TubesReference[i].pipeIn[0];
     if(i != TubesReference.size()-1){
       TubesReference[i].out = TubesReference[i+1].pipeOut[1];
@@ -130,35 +130,43 @@ main(void) {
     cout << "Thread " << levelOneThreads[i] <<  endl;
   }*/
 
-  for(int i = 0; i < TubesReference.size(); ++i){
-    int ret =  pthread_create(&levelOneThreads[i],NULL, readWriteThread, &TubesReference[i]);
+  cout << levelOneProcesses << endl;
+  for(int i = 0; i < levelOneProcesses; ++i){
+    cout << "HERE " << i << endl;
+    pthread_t Proccessthread;
+    int ret =  pthread_create(&Proccessthread,NULL, readWriteThread, &TubesReference[i]);
     if(ret != 0) {
       printf("Error: pthread_create() failed\n");
       exit(EXIT_FAILURE);
+    }else{
+      cout << "return: " << pthread_join(Proccessthread, NULL) << endl;
     }
-    cout << "Thread " << levelOneThreads[i] <<  endl;
+    //cout << "Thread " << levelOneThreads[i] << " Tube " << TubesReference[i].child <<  endl;
     //pthread_create(&levelOneThreads[i], NULL, readWriteThread, &TubesReference[i]);
   }
 
 
   //string myarray [] = { "Control One { ./level1/son1 son1.cfg }", "Control Two { ./level1/son2 son2.cfg }" , "Control Three { ./level1/son3 son3.cfg }", "Control Three { ./level1/son3 son3.cfg }" };
   //Envieronment variables level 1
-  void *ret;
-  for(int i=0; i< TubesReference.size(); ++i){
-    cout << i << "::" <<   endl;
-    pthread_join(levelOneThreads[i], &ret);
-  }
+  /*void *ret;
+  for(int i=0; i< TubesReference.size(); ++i){    
+    pthread_join(levelOneThreads[i], NULL);//wait for thread i
+    cout << i << ":: Evaluation finished" <<   endl;
+  }*/
   return 0;
 }
 
 void* readWriteThread(void *arg) {
-  WriteIn *dataInOut = (struct WriteIn *) arg;
+  sleep(3);
+  /*WriteIn *dataInOut = (struct WriteIn *) arg;
 
   char c;
   while (read(dataInOut->in, &c, 1) > 0) {
     write(dataInOut->out, &c, 1);
   }
   close(dataInOut->in);
-  close(dataInOut->out);
-  return NULL;
+  close(dataInOut->out);*/
+  
+
+  //return NULL;
 }
