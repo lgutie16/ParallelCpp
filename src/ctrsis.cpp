@@ -130,6 +130,7 @@ main(void) {
     cout << "Thread " << levelOneThreads[i] <<  endl;
   }*/
 
+  putenv("VARIABLE=sistem catching variables");
 
   string myarray [] = { "Control One { ./level1/son1 son1.cfg }", "Control Two { ./level1/son2 son2.cfg }" , "Control Three { ./level1/son3 son3.cfg }", "Control Three { ./level1/son3 son3.cfg }" };
   cout << levelOneProcesses << endl;
