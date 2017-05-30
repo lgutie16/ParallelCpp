@@ -15,7 +15,6 @@
 #include <stdlib.h>
 #include <cstdlib>
 
-
 struct WriteIn {
   int in;
   int out;
@@ -28,20 +27,10 @@ using namespace std;
 
 void* readWriteThread(void *);
 
-
 //It creates tubes and return them and after that 
 //The tube is storage in a vector of type WriteIn
 WriteIn createTube(string& childInfo, int& position) {
-  /*vector<string> vec;
-  istringstream iss(childInfo);
-  copy(istream_iterator<string>(iss),
-  istream_iterator<string>(),
-  back_inserter(vec));
-  //Envieronment variables level 1
-  setenv("FICHEROCFG", vec[4].c_str(), 1);
-  setenv("DIRDETRABAJO", vec[3].c_str(), 1);*/
-
-  //verificar - innecessary
+    //verificar - innecessary
   string directory = "./evaluator"; //verificar esta parte(No sé si los controles tambien estan en ese directorio)
   const char *path = directory.c_str();
   //fin de verificar
@@ -80,8 +69,6 @@ main(void) {
   vector<WriteIn> TubesReference; 
   WriteIn mainTube;
   TubesReference.push_back(mainTube);
-
-
   const char* file = "ctrsis.cfg";
   int levelOneProcesses = 0;
   string line;
@@ -97,11 +84,10 @@ main(void) {
   } 
   configFile.close();
 
+
   //Ya tengo los procesos guardados en un vector
   //Ahora asocio las entradas con las salidas de cada una de las tuberias
   //Según corresponda
-
-  
   if ((TubesReference[0].in = open("ctrsis.cfg", O_RDONLY)) == -1) {
     std::cerr << "Error open file" << std::endl;
     return 1;
@@ -118,20 +104,7 @@ main(void) {
     cout << TubesReference[i].in << "::" << TubesReference[i].out << endl;
   }
  
-  
-
-  //Con ese array creo los hilos que van a ejecutar a los ctrEval 
-  //Aqué quedaría listo el primer nivel
-       //Cuento el numero de procesos hijos a crear y creo un array de hilos
   pthread_t levelOneThreads[levelOneProcesses];
-  /*for (int i = 0; i < TubesReference.size(); ++i){
-    // pthread_t Proccessthread;
-    levelOneThreads[i] = new  pthread_t();
-    cout << "Thread " << levelOneThreads[i] <<  endl;
-  }*/
-
-  
-  
   string myarray [] = { "Control One { ./level1/son1 son1.cfg }", "Control Two { ./level1/son2 son2.cfg }" , "Control Three { ./level1/son3 son3.cfg }", "Control Three { ./level1/son3 son3.cfg }" };
   cout << levelOneProcesses << endl;
   for(int i = 0; i < levelOneProcesses; ++i){
@@ -140,7 +113,6 @@ main(void) {
     copy(istream_iterator<string>(iss),
     istream_iterator<string>(),
     back_inserter(vec));
-    //Envieronment variables level 1
     string file = "FICHEROCFG=" + vec[4];
     string folder = "DIRDETRABAJO=" + vec[3];
     char* formatFile = new char[file.length()+1]; 
@@ -149,7 +121,6 @@ main(void) {
     memcpy(formatFolder, folder.c_str(), folder.length()+1);
     putenv(formatFile);
     putenv(formatFolder);
-    //putenv("VARIABLE=hello");
     system( "./evaluator" );
 
 
@@ -160,18 +131,8 @@ main(void) {
     }else{
       cout << "return: " << pthread_join(levelOneThreads[i], NULL) << endl;
     }
-    //cout << "Thread " << levelOneThreads[i] << " Tube " << TubesReference[i].child <<  endl;
-    //pthread_create(&levelOneThreads[i], NULL, readWriteThread, &TubesReference[i]);
   }
 
-
-  //string myarray [] = { "Control One { ./level1/son1 son1.cfg }", "Control Two { ./level1/son2 son2.cfg }" , "Control Three { ./level1/son3 son3.cfg }", "Control Three { ./level1/son3 son3.cfg }" };
-  //Envieronment variables level 1
-  /*void *ret;
-  for(int i=0; i< TubesReference.size(); ++i){    
-    pthread_join(levelOneThreads[i], NULL);//wait for thread i
-    cout << i << ":: Evaluation finished" <<   endl;
-  }*/
   return 0;
 }
 
@@ -180,19 +141,12 @@ void* readWriteThread(void *arg) {
   char *configfile = getenv("FICHEROCFG");
   char *configpath = getenv("DIRDETRABAJO"); 
   cout << configpath << configfile << endl;
-  
   WriteIn *dataInOut = (struct WriteIn *) arg;
-   
-  
 
   char c;
   while (read(dataInOut->in, &c, 1) > 0) {
-    //write(dataInOut->out, &c, 1);
     cout << c ;
   }
   close(dataInOut->in);
   close(dataInOut->out);
-  
-
-  //return NULL;
 }
