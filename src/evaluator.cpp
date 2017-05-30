@@ -21,15 +21,14 @@
 using namespace std;
 
 int
-main(char* env[]) {
+main() {
   int c;
 
   int i =0;
-  char *configfile = getenv("PATH");
+  char *configfile = getenv("FICHEROCFG");
   char *configpath = getenv("DIRDETRABAJO"); 
   while (i < 10) {
-    c = ::toupper(c);
-    cout << i << "ALGO" << configfile << configpath << endl  ;
+    cout << i << "ALGO" << configpath << configfile  << endl  ;
     i++;
   }
   return 0;

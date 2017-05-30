@@ -130,8 +130,8 @@ main(void) {
     cout << "Thread " << levelOneThreads[i] <<  endl;
   }*/
 
-  putenv("VARIABLE=sistem catching variables");
-
+  
+  
   string myarray [] = { "Control One { ./level1/son1 son1.cfg }", "Control Two { ./level1/son2 son2.cfg }" , "Control Three { ./level1/son3 son3.cfg }", "Control Three { ./level1/son3 son3.cfg }" };
   cout << levelOneProcesses << endl;
   for(int i = 0; i < levelOneProcesses; ++i){
@@ -141,8 +141,16 @@ main(void) {
     istream_iterator<string>(),
     back_inserter(vec));
     //Envieronment variables level 1
-    setenv("FICHEROCFG", vec[4].c_str(), 1);
-    setenv("DIRDETRABAJO", vec[3].c_str(), 1);
+    string file = "FICHEROCFG=" + vec[4];
+    string folder = "DIRDETRABAJO=" + vec[3];
+    char* formatFile = new char[file.length()+1]; 
+    memcpy(formatFile, file.c_str(), file.length()+1);
+    char* formatFolder= new char[folder.length()+1]; 
+    memcpy(formatFolder, folder.c_str(), folder.length()+1);
+    putenv(formatFile);
+    putenv(formatFolder);
+    //putenv("VARIABLE=hello");
+    system( "./evaluator" );
 
 
     int ret =  pthread_create(&levelOneThreads[i],NULL, readWriteThread, &TubesReference[i]);
