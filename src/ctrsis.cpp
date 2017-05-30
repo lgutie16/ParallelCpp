@@ -15,21 +15,22 @@
 #include <stdlib.h>
 #include <cstdlib>
 
+using namespace std;
+
 struct WriteIn {
   int in;
   int out;
+  string line;
   int pipeIn[2];
   int pipeOut[2];
   pid_t child;
 };
 
-using namespace std;
-
 void* readWriteThread(void *);
 
 //It creates tubes and return them and after that 
 //The tube is storage in a vector of type WriteIn
-WriteIn createTube(string& childInfo, int& position) {
+WriteIn createTube(string& childInfo) {
     //verificar - innecessary
   string directory = "./evaluator"; //verificar esta parte(No sé si los controles tambien estan en ese directorio)
   const char *path = directory.c_str();
@@ -42,6 +43,7 @@ WriteIn createTube(string& childInfo, int& position) {
 
   pid_t child;
   wiFil.child = child;
+  wiFil.line = childInfo;
 
 
   if ((wiFil.child = fork()) == 0) {
@@ -75,7 +77,7 @@ main(void) {
   ifstream configFile(file);
   if(configFile.is_open()){
     while ( getline (configFile,line) ){
-      WriteIn structure = createTube(line, levelOneProcesses);
+      WriteIn structure = createTube(line);
       TubesReference.push_back(structure);
       levelOneProcesses++;  
     }
@@ -83,7 +85,6 @@ main(void) {
     cout << "Unable to open file" << endl; 
   } 
   configFile.close();
-
 
   //Ya tengo los procesos guardados en un vector
   //Ahora asocio las entradas con las salidas de cada una de las tuberias
@@ -104,12 +105,10 @@ main(void) {
     cout << TubesReference[i].in << "::" << TubesReference[i].out << endl;
   }
  
-  pthread_t levelOneThreads[levelOneProcesses];
-  string myarray [] = { "Control One { ./level1/son1 son1.cfg }", "Control Two { ./level1/son2 son2.cfg }" , "Control Three { ./level1/son3 son3.cfg }", "Control Three { ./level1/son3 son3.cfg }" };
-  cout << levelOneProcesses << endl;
+  pthread_t levelOneThreads[levelOneProcesses];  
   for(int i = 0; i < levelOneProcesses; ++i){
     vector<string> vec;
-    istringstream iss(myarray[i]);
+    istringstream iss(TubesReference[i+1].line);
     copy(istream_iterator<string>(iss),
     istream_iterator<string>(),
     back_inserter(vec));
@@ -122,8 +121,6 @@ main(void) {
     putenv(formatFile);
     putenv(formatFolder);
     system( "./evaluator" );
-
-
     int ret =  pthread_create(&levelOneThreads[i],NULL, readWriteThread, &TubesReference[i]);
     if(ret != 0) {
       printf("Error: pthread_create() failed\n");
