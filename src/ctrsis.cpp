@@ -32,7 +32,7 @@ void* readWriteThread(void *);
 //The tube is storage in a vector of type WriteIn
 WriteIn createTube(string& childInfo) {
     //verificar - innecessary
-  string directory = "./evaluator"; //verificar esta parte(No sé si los controles tambien estan en ese directorio)
+  string directory = "./ctreval"; //verificar esta parte(No sé si los controles tambien estan en ese directorio)
   const char *path = directory.c_str();
   //fin de verificar
   
@@ -120,10 +120,10 @@ main(void) {
     memcpy(formatFolder, folder.c_str(), folder.length()+1);
     putenv(formatFile);
     putenv(formatFolder);
-    system( "./evaluator" );
+    system( "./ctreval" );
     int ret =  pthread_create(&levelOneThreads[i],NULL, readWriteThread, &TubesReference[i]);
     if(ret != 0) {
-      printf("Error: pthread_create() failed\n");
+      cerr << "Error: pthread_create() failed\n" << endl;
       exit(EXIT_FAILURE);
     }else{
       cout << "return: " << pthread_join(levelOneThreads[i], NULL) << endl;
@@ -135,11 +135,7 @@ main(void) {
 
 void* readWriteThread(void *arg) {
   sleep(3);
-  char *configfile = getenv("FICHEROCFG");
-  char *configpath = getenv("DIRDETRABAJO"); 
-  cout << configpath << configfile << endl;
   WriteIn *dataInOut = (struct WriteIn *) arg;
-
   char c;
   while (read(dataInOut->in, &c, 1) > 0) {
     cout << c ;

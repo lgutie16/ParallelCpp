@@ -31,16 +31,9 @@ void* readWriteThread(void *);
 //It creates tubes and return them and after that 
 //The tube is storage in a vector of type WriteIn
 WriteIn createTube(string& childInfo, int& position) {
-  vector<string> vec;
-  istringstream iss(childInfo);
-  copy(istream_iterator<string>(iss),
-  istream_iterator<string>(),
-  back_inserter(vec));
-  //verificar - innecessary
   string directory = "./evaluator";
   const char *path = directory.c_str();
 
-  
   //Start tube creation
   WriteIn wiFil;
   pipe(wiFil.pipeIn);
@@ -85,6 +78,10 @@ main(void) {
   string line;
   ifstream configFile(file);
 
+
+  WriteIn mainTube;
+  TubesReference.push_back(mainTube);
+
   ////////////
   char ch[20], evaluator[20] = "Evaluador";
   if(configFile.is_open()){ 
@@ -93,36 +90,60 @@ main(void) {
       if(strcmp(ch,evaluator)==0){ 
         WriteIn structure = createTube(line, levelOneProcesses);
         TubesReference.push_back(structure);
-        cout << TubesReference[levelOneProcesses].child << endl;
+        //cout << TubesReference[levelOneProcesses].child << endl;
         levelOneProcesses++;    
       };
     }    
   }else{
-    cout << "Unable to open file" << endl; 
+    cerr << "Unable to open file" << endl; 
   }
 
+  //Passing the envieronment to children
+  //In is emphy and after it is changer by the evaluator output
+
   /////////// Enlazan los tubos
-  WriteIn mainTube;
-  TubesReference.push_back(mainTube);
-  if ((TubesReference[0].in = open("./level1/son1/son1.cfg", O_RDONLY)) == -1) {
+  if ((TubesReference[0].in = open(file, O_RDONLY)) == -1) {
     std::cerr << "Error open file" << std::endl;
     return 1;
-  } //simulando la entrada que esta dada por la salida del proceso ctrsis*/
+  } 
+  TubesReference[0].out = TubesReference[1].pipeOut[1];
+  cout << TubesReference[0].in << "::" << TubesReference[0].out << endl;
+  for (int i = 1; i < levelOneProcesses; ++i){
+    TubesReference[i].in = TubesReference[i].pipeIn[0];
+    if(i != TubesReference.size()-1){
+      TubesReference[i].out = TubesReference[i+1].pipeOut[1];
+    }else{
+      TubesReference[TubesReference.size()-1].out = 1;
+    }
+    cout << TubesReference[i].in << "::" << TubesReference[i].out << endl;
+  }
 
 
-  
- 
+  pthread_t levelOneThreads[levelOneProcesses];  
+  for(int i = 0; i < levelOneProcesses; ++i){
+    //putenv(configfile);
+    //putenv(configpath);
+    system( "./evaluator" );
+    int ret =  pthread_create(&levelOneThreads[i],NULL, readWriteThread, &TubesReference[i]);
+    if(ret != 0) {
+      cerr << "Error: pthread_create() failed\n" << endl;
+      exit(EXIT_FAILURE);
+    }else{
+      cout << "return: " << pthread_join(levelOneThreads[i], NULL) << endl;
+    }
+  }
+
+  //cout << "Something" << file  << TubesReference[0].in << endl;
   return 0;
 }
 
 void* readWriteThread(void *arg) {
+  sleep(3);
   WriteIn *dataInOut = (struct WriteIn *) arg;
-  cout << "here" << endl;
   char c;
   while (read(dataInOut->in, &c, 1) > 0) {
-    write(dataInOut->out, &c, 1);
+    cout << c ;
   }
   close(dataInOut->in);
   close(dataInOut->out);
-  return NULL;
 }

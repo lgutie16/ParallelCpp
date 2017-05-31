@@ -27,7 +27,7 @@ main() {
   int i =0;
   char *configfile = getenv("FICHEROCFG");
   char *configpath = getenv("DIRDETRABAJO"); 
-  while (i < 10) {
+  while (i < 2) {
     cout << i << "ALGO" << configpath << configfile  << endl  ;
     i++;
   }
