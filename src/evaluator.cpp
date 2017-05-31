@@ -26,10 +26,28 @@ main() {
 
   int i =0;
   char *configfile = getenv("FICHEROCFG");
-  char *configpath = getenv("DIRDETRABAJO"); 
+  char *configpath = getenv("DIRDETRABAJO");
+
+  string line;
+  //cout << getline(cin, line) << endl;
   while (i < 2) {
     cout << i << "ALGO" << configpath << configfile  << endl  ;
     i++;
   }
+
+  /*for (std::string line; std::getline(std::cin, line);) {
+    std::cout << line << std::endl;
+  }*/
+
+  /*string input_line;
+  while(cin) {
+    getline(cin, input_line);
+    cout << input_line << endl;
+  };*/
+
+  /*while ((c = std::cin.get()) != EOF) {
+    c = ::toupper(c);
+    std::cout << (char) c;
+  }*/
   return 0;
 }
